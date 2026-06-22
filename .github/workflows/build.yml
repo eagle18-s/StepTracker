@@ -27,14 +27,13 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Setup Gradle
+    - name: Setup Stabilized Gradle
       uses: gradle/actions/setup-gradle@v3
       with:
-        gradle-version: current
+        gradle-version: '8.0'
 
     - name: Build Main App with Global Gradle
       run: |
-        # settings.gradle olan qovluğu tapır və birbaşa orada layihəni yığır
         BUILD_DIR=$(dirname $(find . -name "settings.gradle" | head -n 1))
         cd "$BUILD_DIR"
         gradle assembleDebug
