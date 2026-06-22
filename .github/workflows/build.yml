@@ -19,7 +19,6 @@ jobs:
 
     - name: Inject Web Client ID into strings.xml
       run: |
-        # strings.xml faylını harada olursa olsun tapır və ID-ni daxil edir
         find . -name "strings.xml" -path "*/src/main/res/values/*" -exec sed -i 's/SİZİN_WEB_CLIENT_ID/600624936310-vjh82pio4figis8al4k6j7gmp4klk964.apps.googleusercontent.com/g' {} +
 
     - name: Set up JDK 17
@@ -27,19 +26,18 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
-        cache: gradle
 
-    - name: Find and Grant execute permission for gradlew
-      run: |
-        # gradlew faylını bütün alt qovluqlarda axtarıb tapır və icazə verir
-        find . -name "gradlew" -exec chmod +x {} +
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v3
+      with:
+        gradle-version: current
 
-    - name: Build Main App with Gradle
+    - name: Build Main App with Global Gradle
       run: |
-        # gradlew olan qovluğa avtomatik daxil olub tətbiqi yığır
-        GRADLE_DIR=$(dirname $(find . -name "gradlew" | head -n 1))
-        cd "$GRADLE_DIR"
-        ./gradlew assembleDebug
+        # settings.gradle olan qovluğu tapır və birbaşa orada layihəni yığır
+        BUILD_DIR=$(dirname $(find . -name "settings.gradle" | head -n 1))
+        cd "$BUILD_DIR"
+        gradle assembleDebug
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
