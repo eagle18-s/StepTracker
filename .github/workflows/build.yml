@@ -32,6 +32,12 @@ jobs:
       with:
         gradle-version: '8.2'
 
+    - name: Fix Firebase JSON Location
+      run: |
+        # google-services.json faylını tətbiqin app qovluğunun içinə kopyalayır
+        cp google-services.json StepTracker/app/ || true
+        cp google-services.json StepTrackerBroadcast/app/ || true
+
     - name: Build Main App with Global Gradle
       run: |
         BUILD_DIR=$(dirname $(find . -name "settings.gradle" | head -n 1))
