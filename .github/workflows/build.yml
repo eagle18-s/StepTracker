@@ -1,44 +1,50 @@
 name: Android APK Build From Zip
 
-on: [push, workflow_dispatch]
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
-      - name: Extract Project Zips
-        run: |
-          unzip StepTracker.zip
-          unzip StepTrackerBroadcast.zip
+    - name: Extract Project Zips
+      run: |
+        unzip -o StepTracker.zip
+        unzip -o StepTrackerBroadcast.zip
 
-      - name: Inject Web Client ID into strings.xml
-        run: |
-          # strings.xml faylındakı default yazını sənin real Web Client ID-nlə əvəzləyirik
-          sed -i 's/SİZİN_WEB_CLIENT_ID/600624936310-vjh82pio4figis8al4k6j7gmp4klk964.apps.googleusercontent.com/g' StepTracker/app/src/main/res/values/strings.xml
+    - name: Inject Web Client ID into strings.xml
+      run: |
+        # strings.xml faylını harada olursa olsun tapır və ID-ni daxil edir
+        find . -name "strings.xml" -path "*/src/main/res/values/*" -exec sed -i 's/SİZİN_WEB_CLIENT_ID/600624936310-vjh82pio4figis8al4k6j7gmp4klk964.apps.googleusercontent.com/g' {} +
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: gradle
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: gradle
 
-      - name: Grant execute permission for gradlew
-        run: |
-          if [ -f "StepTracker/gradlew" ]; then
-            chmod +x StepTracker/gradlew
-          fi
+    - name: Find and Grant execute permission for gradlew
+      run: |
+        # gradlew faylını bütün alt qovluqlarda axtarıb tapır və icazə verir
+        find . -name "gradlew" -exec chmod +x {} +
 
-      - name: Build Main App with Gradle
-        run: |
-          cd StepTracker
-          ./gradlew assembleDebug
+    - name: Build Main App with Gradle
+      run: |
+        # gradlew olan qovluğa avtomatik daxil olub tətbiqi yığır
+        GRADLE_DIR=$(dirname $(find . -name "gradlew" | head -n 1))
+        cd "$GRADLE_DIR"
+        ./gradlew assembleDebug
 
-      - name: Upload APK Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: StepTracker-Main-App
-          path: StepTracker/app/build/outputs/apk/debug/app-debug.apk
+    - name: Upload APK Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: StepTracker-Main-App
+        path: |
+          **/build/outputs/apk/debug/*.apk
           
